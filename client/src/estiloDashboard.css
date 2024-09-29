@@ -1,0 +1,159 @@
+.Contenedor {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+.Header {
+    width: 100%;
+    height: auto;
+    position: relative;
+    align-items: center;
+    display: flex;
+    padding: 20px 0;
+}
+.Header h1 {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    height: auto;
+    position: relative;
+    left: 18%;
+    top: 5px;
+}
+.Header img {
+    display: flex;
+    position: absolute;
+    height: auto;
+    width: 1.5%;
+    top: 15px;
+    margin-left: 1.2pc;
+}
+.lineas {
+    width: 676%;
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 20px 0;
+}
+.navegacion {
+    position:absolute;
+    top: 28px;
+    left: 74%;
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+
+}
+.navegacion li {
+    display: inline;
+    margin: 0 0 0 15px;
+}
+.navegacion li:hover{
+    color: #c79c12;
+    text-decoration: underline;
+}
+
+
+.inprve {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background: #ffffff
+}
+
+.inprve li {
+    display: inline;
+    text-align: left;
+    width: 448px;
+    height: 148px;
+    vertical-align: top;
+    margin: 0 5px;
+    padding: 50px 20px;
+    box-sizing: border-box;
+    border: 2px solid #E8DECF;
+    border-radius: 15px 15px 15px 15px;
+}
+.inprve header {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    height: 28px;
+}
+.inprve p {
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    height: 32px;
+}
+
+.cualquiera {
+    width: 100%;
+}
+.alerta, .acinve {
+    display: block;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 15px;
+    border: 2px solid #E8DECF;
+    text-align: left;
+    box-sizing: border-box;
+}
+.alerta header, .acinve header {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.alerta p, .acinve button {
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    margin: 10px 0;
+}
+.acinve button {
+    height: 48px;
+    width: 636px;
+}
+.buttons-container {
+    display: flex;
+    height: 2.5rem; /* Equivalente a 10 en Tailwind (h-10) */
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px; /* Para hacer los bordes redondeados (rounded-full) */
+    background-color: #F4EFE6;
+    padding: 0.25rem;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    height: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+    border-radius: 9999px;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+    color: #141414;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: normal;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+.radio-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.radio-input {
+    visibility: hidden;
+    width: 0;
+}
