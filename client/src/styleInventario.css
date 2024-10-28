@@ -1,0 +1,101 @@
+.Contenedor {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+.Header {
+    width: 100%;
+    height: auto;
+    position: relative;
+    align-items: center;
+    display: flex;
+    padding: 20px 0;
+}
+.Header h1 {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    height: auto;
+    position: relative;
+    left: 25%;
+    top: 5px;
+}
+.Header img {
+    display: flex;
+    position: absolute;
+    border: none;
+    width: auto;
+    height: 40px;
+    top: 15px;
+    margin-left: 1.2pc;
+}
+.lineas {
+    width: 676%;
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 20px 0;
+}
+.navegacion {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    list-style-type: none;
+    padding: 0;
+}
+
+.navegacion li {
+    display: inline;
+}
+
+.navegacion a {
+    text-decoration: none;
+    color: #333;
+    font-size: 18px;
+}
+
+.navegacion a:hover {
+    color: #007bff;
+}
+.perfil {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    
+}
+
+.inprve {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #ffffff
+}
+
+.inprve li {
+    display: inline;
+    text-align: left;
+    flex: 1;
+    max-width: 300px;
+    height: auto;
+    vertical-align: top;
+    margin: 10px;
+    padding: 50px 20px;
+    box-sizing: border-box;
+    border: 2px solid #E8DECF;
+    border-radius: 15px 15px 15px 15px;
+}
+.inprve header {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    height: 28px;
+}
+.inprve p {
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    height: 32px;
+}
