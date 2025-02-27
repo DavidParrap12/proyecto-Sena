@@ -1,0 +1,96 @@
+/* Estilo básico */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0077cc;
+    padding: 0.5em 1em;
+    color: white;
+    position: relative;
+}
+
+/* Logo */
+.navbar-logo h1 {
+    font-size: 1.5em;
+    color: white;
+    margin: 0;
+}
+
+/* Links principales */
+.navbar-links {
+    display: flex;
+    list-style: none;
+    gap: 1.5em;
+}
+
+.navbar-links li a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+
+.navbar-links li a:hover {
+    text-decoration: underline;
+}
+
+/* Usuario */
+.navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.logout-btn {
+    background-color: #ff5757;
+    border: none;
+    padding: 0.4em 0.8em;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background-color: #ff4141;
+}
+
+/* Estilo para el menú responsive */
+.navbar-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 0.4em;
+    cursor: pointer;
+}
+
+.navbar-toggle .bar {
+    background-color: white;
+    height: 3px;
+    width: 25px;
+    border-radius: 3px;
+}
+
+/* Modo responsive */
+@media (max-width: 768px) {
+    .navbar-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: #0077cc;
+        width: 100%;
+        text-align: center;
+    }
+
+    .navbar-links.active {
+        display: flex;
+    }
+
+    .navbar-user {
+        display: none;
+    }
+
+    .navbar-toggle {
+        display: flex;
+    }
+}

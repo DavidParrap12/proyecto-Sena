@@ -1,0 +1,313 @@
+.Contenedor {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+
+.Header {
+    width: 100%;
+    height: auto;
+    position: relative;
+    align-items: center;
+    display: flex;
+    padding: 20px 0;
+    flex-wrap: wrap; /* Added to allow wrapping on smaller screens */
+}
+
+.Header h1 {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    height: auto;
+    position: relative;
+    flex: 1; /* Allow it to grow and take available space */
+    text-align: center; /* Center text for better layout on small screens */
+}
+
+.Header img {
+    border: none;
+    width: auto;
+    height: 40px;
+    margin-left: 1.2pc;
+}
+
+.lineas {
+    width: 100%; /* Adjusted to full width for better layout */
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 20px 0;
+}
+
+.navegacion {
+    position: absolute;
+    top: 28px;
+    right: 10%;
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    display: flex; /* Ensure the navigation items are flex items */
+    flex-wrap: wrap; /* Allow navigation items to wrap */
+    justify-content: flex-end; /* Align items to the end */
+}
+
+.navegacion li {
+    margin: 0 0 0 15px;
+}
+
+.navegacion li:hover {
+    color: #c79c12;
+    text-decoration: underline;
+}
+
+.perfil {
+    position: absolute;
+    width: 40px; /* Adjusted size for better responsiveness */
+    height: 40px; /* Adjusted size for better responsiveness */
+    background-size: cover;
+    border-radius: 50%;
+    margin: 0 auto;
+    top: 28px;
+}
+
+.inprve {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #ffffff;
+}
+
+.inprve li {
+    display: flex; /* Changed to flex for better alignment */
+    flex-direction: column; /* Stack items vertically */
+    text-align: left;
+    flex: 1;
+    max-width: 300px;
+    height: auto;
+    margin: 10px;
+    padding: 20px; /* Reduced padding for better responsiveness */
+    box-sizing: border-box;
+    border: 2px solid #E8DECF;
+    border-radius: 15px;
+}
+
+.inprve header {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    height: auto; /* Removed fixed height for flexibility */
+}
+
+.inprve p {
+    font-family: "Poppins", sans-serif;
+    font-size: 18px;
+    height: auto; /* Removed fixed height for flexibility */
+}
+
+.cualquiera {
+    width: 100%;
+    display: flex;
+    margin-left: 0; /* Adjusted for centering */
+    flex-direction: column; /* Stack alerts and buttons vertically */
+    align-items: center; /* Center items */
+}
+
+.alerta {
+    flex: 1;
+    justify-content: center;
+    width: 100%; /* Adjusted width for better responsiveness */
+    height: auto;
+}
+
+.alerta, .acinve {
+    display: block;
+    margin-bottom: 20px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 15px;
+    border: 2px solid #E8DECF;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.alerta header, .acinve header {
+    font-family: "Poppins", sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.alerta p, .acinve button {
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.acinve button {
+    height: 48px;
+    width: 100%; /* Full width for buttons */
+}
+
+.form-box {
+    width: 90%; /* Adjusted width for better responsiveness */
+    max-width: 400px; /* Set a max width */
+    margin: 50px auto;
+}
+
+.button-box {
+    width: 100%; /* Full width for button box */
+    max-width: 250px; /* Set a max width */
+    margin: 20px auto;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 30px;
+    background: #F5F0E5;
+}
+
+.toggle-btn {
+    padding: 10px 25px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    outline: none;
+    position: relative;
+    text-align: center;
+    color: rgb(0, 0, 0);
+    z-index: 1;
+}
+
+#btn {
+    left: 0;
+    top: 0;
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 30px;
+    transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* Media Queries */
+
+/* Dispositivos pequeños (móviles) */
+@media (max-width: 767px) {
+    .Header h1 {
+        font-size: 16px;
+        left: 0; /* Centered */
+        top: 0;
+        text-align: center; /* Center text */
+    }
+
+    .Header img {
+        width: 10%; /* Slightly increased for visibility */
+        top: 5px;
+        margin-left: 0; /* Centered */
+    }
+
+    .navegacion {
+        position: relative; /* Changed to relative */
+        top: auto; /* Removed top positioning */
+        left: auto; /* Centered */
+        font-size: 14px;
+        justify-content: center; /* Center items */
+    }
+
+    .inprve {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items */
+    }
+
+    .inprve li {
+        width: 100%; /* Full width */
+        margin: 10px 0; /* Adjust margin */
+    }
+
+    .acinve button {
+        width: 100%; /* Full width for buttons */
+    }
+
+    .buttons-container {
+        width: 100%; /* Full width */
+    }
+}
+
+/* Dispositivos medianos (tabletas) */
+@media (max-width: 1024px) {
+    .Header h1 {
+        font-size: 18px;
+        left: 0; /* Centered */
+    }
+
+    .navegacion {
+        position: relative; /* Changed to relative */
+        top: auto; /* Removed top positioning */
+        left: auto; /* Centered */
+        font-size: 15px;
+        justify-content: center; /* Center items */
+    }
+
+    .inprve li {
+        width: 90%; /* Adjusted width */
+    }
+
+    .acinve button {
+        width: 90%; /* Adjusted width */
+    }
+}
+/* Dispositivos medianos (430px a 932px) */
+@media (min-width: 430px) and (max-width: 932px) {
+    .Header h1 {
+        font-size: 18px; /* Adjusted font size for better visibility */
+        left: 10%; /* Slightly adjusted positioning */
+        text-align: center; /* Center text for better layout */
+    }
+
+    .Header img {
+        width: 8%; /* Adjusted width for better visibility */
+        top: 5px; /* Kept the same */
+        margin-left: 0; /* Centered */
+    }
+
+    .navegacion {
+        position: relative; /* Changed to relative */
+        top: auto; /* Removed top positioning */
+        left: auto; /* Centered */
+        font-size: 15px; /* Slightly larger font for readability */
+        justify-content: center; /* Center items */
+    }
+
+    .inprve {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items */
+    }
+
+    .inprve li {
+        width: 90%; /* Full width for items */
+        margin: 10px 0; /* Adjust margin for spacing */
+        padding: 20px; /* Reduced padding for better layout */
+    }
+
+    .perfil {
+        width: 50px; /* Adjusted size for better responsiveness */
+        height: 50px; /* Adjusted size for better responsiveness */
+    }
+
+    .acinve button {
+        width: 100%; /* Full width for buttons */
+    }
+
+    .form-box {
+        width: 90%; /* Adjusted width for form boxes */
+        max-width: 350px; /* Set a max width */
+        margin: 30px auto; /* Adjusted margin */
+    }
+
+    .button-box {
+        width: 100%; /* Full width for button box */
+        max-width: 250px; /* Set a max width */
+        margin: 20px auto;
+    }
+}
