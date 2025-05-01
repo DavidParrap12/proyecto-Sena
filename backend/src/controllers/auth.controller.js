@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Ruta para el login
 router.post('/login', async (req, res) => {
+    try {
     const { username, password } = req.body;
 
     // Aquí deberías buscar el usuario en la base de datos

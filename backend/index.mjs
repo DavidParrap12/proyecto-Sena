@@ -25,7 +25,6 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/productos', productosRouter);
 app.use('/auth', authRouter);
 
-// Iniciar el servidor
 app.listen(port, () => {
     console.log(`Servidor corriendo en el puerto:${port}`);
 });
