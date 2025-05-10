@@ -3,94 +3,94 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #0077cc;
-    padding: 0.5em 1em;
-    color: white;
-    position: relative;
+    padding: 1rem 2rem;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Logo */
+.navbar-logo {
+    display: flex;
+    align-items: center;
+}
+
 .navbar-logo h1 {
-    font-size: 1.5em;
-    color: white;
-    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
 }
 
-/* Links principales */
 .navbar-links {
     display: flex;
+    gap: 2rem;
     list-style: none;
-    gap: 1.5em;
 }
 
-.navbar-links li a {
+.navbar-links a {
     text-decoration: none;
-    color: white;
-    font-weight: bold;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
-.navbar-links li a:hover {
-    text-decoration: underline;
+.navbar-links a:hover {
+    color: #0077cc;
 }
 
-/* Usuario */
 .navbar-user {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 1rem;
 }
 
 .logout-btn {
-    background-color: #ff5757;
+    padding: 0.5rem 1rem;
     border: none;
-    padding: 0.4em 0.8em;
+    border-radius: 4px;
+    background-color: #ff5757;
     color: white;
-    font-weight: bold;
-    border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .logout-btn:hover {
-    background-color: #ff4141;
+    background-color: #e04141;
 }
 
-/* Estilo para el menú responsive */
 .navbar-toggle {
     display: none;
     flex-direction: column;
-    gap: 0.4em;
+    gap: 4px;
+    background: none;
+    border: none;
     cursor: pointer;
+    padding: 4px;
 }
 
-.navbar-toggle .bar {
-    background-color: white;
-    height: 3px;
+.bar {
     width: 25px;
-    border-radius: 3px;
+    height: 3px;
+    background-color: #333;
+    transition: 0.3s;
 }
 
-/* Modo responsive */
 @media (max-width: 768px) {
-    .navbar-links {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background-color: #0077cc;
-        width: 100%;
-        text-align: center;
-    }
-
-    .navbar-links.active {
+    .navbar-toggle {
         display: flex;
     }
 
-    .navbar-user {
+    .navbar-links {
         display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: white;
+        flex-direction: column;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .navbar-toggle {
+    .navbar-links.active {
         display: flex;
     }
 }

@@ -1,63 +1,84 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
-import axios from 'axios'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 
-function Ingreso () {
-        const [email, setEmail] = useState("")
-        const [password, setPassword] = useState("")
-        const navigate = useNavigate()
+function Ingreso() {
+    const { signin } = useAuth();
+    const navigate = useNavigate();
+    
+    const [formData, setFormData] = useState({
+        identifier: '', // Puede ser email o username
+        password: ''
+    });
 
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-            try {
-                const response = await axios.post("http://localhost:9940/ingreso", 
-                    {email, password},
-                    {   
-                        headers: {
-                            'Content-Type': 'application/json'
-                    }
-                }
-                );
+    // En la función de envío
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            // Determinar si es email o username
+            const isEmail = formData.identifier.includes('@');
+            const loginData = isEmail 
+                ? { email: formData.identifier, password: formData.password }
+                : { username: formData.identifier, password: formData.password };
                 
-                if(response.data.message === "Permitido"){
-                    navigate('/principal')
-                } else {
-                    alert(response.data.message);
-                }
-            }catch (error) {
-                console.error("Error:", error.response?.data || error.message);
-                alert(error.response?.data?.message || "Error de conexión");
-            };
-        }        
+            const response = await signin(loginData);
+            if (response) {
+                navigate('/principal');
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+        }
+    };
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
     return (
         <div className="container">
-        <div className='header'>
-            <h1>SGS</h1>
-            <img className="carro" src="imagenes/carro.png" alt="diseño" />
-        </div>
+            <div className='header'>
+                <div className="navbar-logo">
+                    <h1>SGS</h1>
+                    <img src="/imagenes/carro.png" alt="Carro de compras" className="carro-logo" />
+                </div>
+            </div>
             <div className="left-section">
-            <img className= "imagenPrincipal" src="imagenes/imagenPo.jpg" alt="Dashboard Illustration" />
+                <img className="imagenPrincipal" src="./imagenes/imagenPo.jpg" alt="Dashboard Illustration" />
             </div>
             <div className="right-section">
-            <h1 className='sesion'>Inicio de Sesión</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                <label htmlFor="email" className='clave-Usuario'>Ingrese su usuario o contraseña</label>
-                <input type="email" id="email" placeholder="usuario@ejemplo.com" 
-                onChange={(e) => setEmail(e.target.value)} required/>
-                </div>
-                <div className="form-group">
-                <label htmlFor="contraseña" className='clave-Usuario'>Contraseña</label>
-                <input type="password" id="contraseña" placeholder="********" 
-                onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <button type="submit" className='link'>Ingresar</button>
-            </form>
+                <h1 className='sesion'>Inicio de Sesión</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="identifier" className='clave-Usuario'>Ingrese su usuario o correo</label>
+                        <input 
+                            type="text" 
+                            id="identifier"
+                            name="identifier"
+                            placeholder="usuario o correo@ejemplo.com" 
+                            value={formData.identifier}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password" className='clave-Usuario'>Contraseña</label>
+                        <input 
+                            type="password" 
+                            id="password"
+                            name="password"
+                            placeholder="********" 
+                            value={formData.password}
+                            onChange={handleChange}
+                            required 
+                        />
+                    </div>
+                    <button type="submit" className='link'>Ingresar</button>
+                </form>
             </div>
         </div>
-
-    
     );
 }
 

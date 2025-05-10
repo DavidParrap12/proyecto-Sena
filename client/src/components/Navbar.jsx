@@ -1,34 +1,50 @@
 import React, { useState } from 'react';
-import './Navbar.css';
+import { Link, useNavigate } from 'react-router-dom';
+import '../styles/Navbar.css';
+import { useAuth } from '../context/authContext';
 
 const Navbar = () => {
-    // Estado para menú en dispositivos móviles
     const [isMenuOpen, setMenuOpen] = useState(false);
+    const navigate = useNavigate();
+    const { user, logout } = useAuth(); // Add this line
 
     const toggleMenu = () => setMenuOpen(!isMenuOpen);
 
+    const handleLogout = async () => {
+        try {
+            await logout();  // Use the logout function from auth context
+            navigate('/');
+        } catch (error) {
+            console.error("Error during logout:", error);
+        }
+    };
+
     return (
         <nav className="navbar">
-            {/* Logo */}
             <div className="navbar-logo">
-                <h1>SGS</h1>
+                <Link to="/principal" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+                    <h1>SGS</h1>
+                    <img src="/imagenes/carro.png" alt="Carro de compras" className="carro-logo" style={{ width: '2rem', height: '2rem' }} />
+                </Link>
             </div>
 
-            {/* Links para las secciones */}
             <ul className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
-                <li><a href="/dashboard">Inicio</a></li>
-                <li><a href="/inventario">Inventario</a></li>
-                <li><a href="/ventas">Ventas</a></li>
-                <li><a href="/reportes">Reportes</a></li>
+                <li><Link to="/principal">Principal</Link></li>
+                <li><Link to="/inventario">Inventario</Link></li>
+                <li><Link to="/ventas">Ventas</Link></li>
+                <li><Link to="/reportes">Reportes</Link></li>
+                {user?.role === 'admin' && (  // Only show Ajustes for admin
+                    <li><Link to="/ajustes">Ajustes</Link></li>
+                )}
             </ul>
 
-            {/* Opciones del usuario */}
             <div className="navbar-user">
-                <span>Hola, Admin</span>
-                <button className="logout-btn">Salir</button>
+                <span>Hola, {user?.username || 'Usuario'}</span>
+                <button className="logout-btn" onClick={handleLogout}>
+                    Salir
+                </button>
             </div>
 
-            {/* Botón para menú en responsive */}
             <button 
                 className="navbar-toggle" 
                 onClick={toggleMenu} 

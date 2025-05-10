@@ -1,101 +1,226 @@
-.Contenedor {
-    display: flex;
-    height: 100vh;
-    flex-direction: column;
-    padding: 0;
-    margin: 0;
+.principal-container,
+.inventario-container,
+.ventas-container,
+.reportes-container {
+    padding-top: 60px; /* Height of the header */
+    min-height: 100vh;
 }
-.Header {
-    width: 100%;
-    height: auto;
-    position: relative;
+.contenedor-inventario {
+    padding: 2rem;
+    background-color: #f5f7fa;
+    min-height: 100vh;
+}
+
+.contenido-inventario {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.acciones-inventario {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    display: flex;
-    padding: 20px 0;
+    margin-bottom: 2rem;
+    gap: 1rem;
 }
-.Header h1 {
-    font-family: "Poppins", sans-serif;
-    font-size: 20px;
-    height: auto;
-    position: relative;
-    left: 25%;
-    top: 5px;
-}
-.Header img {
+
+.btn-agregar {
     display: flex;
-    position: absolute;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #4CAF50;
+    color: white;
     border: none;
-    width: auto;
-    height: 40px;
-    top: 15px;
-    margin-left: 1.2pc;
-}
-.lineas {
-    width: 676%;
-    border: 0;
-    height: 1px;
-    background: #ccc;
-    margin: 20px 0;
-}
-.navegacion {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    list-style-type: none;
-    padding: 0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.navegacion li {
-    display: inline;
+.btn-agregar:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-.navegacion a {
-    text-decoration: none;
-    color: #333;
-    font-size: 18px;
+.buscar-producto {
+    position: relative;
+    width: 300px;
 }
 
-.navegacion a:hover {
-    color: #007bff;
-}
-.perfil {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    
+.buscar-producto input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
 }
 
-.inprve {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    padding: 20px;
-    margin-bottom: 20px;
-    background: #ffffff
+.buscar-producto input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
-.inprve li {
-    display: inline;
+.buscar-producto::before {
+    content: "🔍";
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    color: #666;
+}
+
+.tabla-productos {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th, td {
+    padding: 1rem;
     text-align: left;
-    flex: 1;
-    max-width: 300px;
-    height: auto;
-    vertical-align: top;
-    margin: 10px;
-    padding: 50px 20px;
-    box-sizing: border-box;
-    border: 2px solid #E8DECF;
-    border-radius: 15px 15px 15px 15px;
+    border-bottom: 1px solid #eee;
 }
-.inprve header {
-    font-family: "Poppins", sans-serif;
-    font-size: 20px;
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-accion {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.btn-editar {
+    background-color: #2196F3;
+    color: white;
+}
+
+.btn-editar:hover {
+    background-color: #1976D2;
+}
+
+.btn-eliminar {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-eliminar:hover {
+    background-color: #d32f2f;
+}
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.producto-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dynamic-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.price-display {
+    font-size: 1.25rem;
     font-weight: bold;
-    height: 28px;
+    color: #2c3e50;
 }
-.inprve p {
-    font-family: "Poppins", sans-serif;
-    font-size: 18px;
-    height: 32px;
+
+.discount-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.form-producto {
+    background: #e3f2fd;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 16px 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.form-producto input {
+    border: 1px solid #90caf9;
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-right: 8px;
+    font-size: 1rem;
+}
+
+.form-producto button {
+    border: none;
+    border-radius: 4px;
+    padding: 6px 16px;
+    margin-left: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.form-producto button:first-of-type {
+    background: #43a047;
+    color: white;
+}
+
+.form-producto button:first-of-type:hover {
+    background: #388e3c;
+}
+
+.form-producto button:last-of-type {
+    background: #e53935;
+    color: white;
+}
+
+.form-producto button:last-of-type:hover {
+    background: #b71c1c;
 }

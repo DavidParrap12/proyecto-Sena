@@ -1,20 +1,20 @@
-import { Router } from "express";
-import {
-    login, 
-    logout, 
+import { Router } from 'express';
+import { 
     register,
-    dashboard
-} from '../controllers/auth.controller.js'
-import { authRequired } from "../middlewares/validateToken.js";
+    login,
+    logout,
+    verifyToken,
+    profile,
+    principal } from '../controllers/auth.controller.js';
+import { authRequired } from '../middlewares/ValidateToken.js';
 
-const router = Router()
+const router = Router();
 
 router.post('/register', register);
-
 router.post('/login', login);
-
 router.post('/logout', logout);
+router.get('/verify', verifyToken);
+router.get('/principal', authRequired, principal);
+router.get('/profile', authRequired, profile);
 
-router.get('/dashboard', authRequired, dashboard);
-
-export default router
+export default router;

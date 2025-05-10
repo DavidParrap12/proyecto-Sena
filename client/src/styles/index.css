@@ -1,181 +1,170 @@
 .container {
   display: flex;
   height: 100vh;
-  position: static;
+  position: relative;
+  background-color: #f0f4f0; /* Adjusted background to match the image tone */
+  font-family: "Poppins", sans-serif;
 }
 
-.header{
+.header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-}
-.header h1 {
-  font-family: "Poppins", sans-serif;
-  font-size: 100%;
-  font: bold;
-  height: auto;
   position: absolute;
-  left: 5%;
   top: 3.5%;
+  left: 5%;
+  right: 5%;
+  z-index: 10;
 }
-.header img{
-  display: flex;
-  position: absolute;
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.header img {
   height: auto;
-  width: 1.5%;
-  bottom: 94.5%;
-  margin-left: 3.5pc;
+  width: 2rem;
+  color: #4a4a4a; /* Neutral cart icon color */
 }
 
 .left-section {
-  background-color: #f4f4f4; /* Color gris */
+  background-color: #f0f4f0; /* Matching container background */
   width: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: -50px;
-  margin-bottom: -7px;
-  margin-top: -7px;
-  
+  position: relative;
+  overflow: hidden;
 }
 
-.right-section{
-  font-family: "Poppins", sans-serif;
-  font-size: 48px;
-  background-color: #ffffff; /* Color blanco */
+.right-section {
+  background-color: #ffffff;
   width: 50%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 0;
+  padding: 1rem;
+  position: relative;
+  z-index: 2;
 }
 
 .imagenPrincipal {
   width: 50%;
   height: auto;
-  box-shadow: 0px 0px 810px#939393;
-  border-radius: 10%; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-radius: 15px;
 }
 
 .sesion {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem; /* Reduced margin */
+  color: #2c3e50;
+  text-align: center;
 }
 
 form {
-  width: 80%;
-  max-width: 300px; 
+  width: 100%;
+  max-width: 300px;
+  margin-top: -2rem; /* Moved up the form */
 }
 
 .form-group {
-  margin-bottom: 5px;
+  margin-bottom: 1rem;
 }
 
-.right-section h1 {
-  margin-bottom: 25px;
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #34495e;
+  font-weight: 600;
 }
 
 .form-group input {
-  width: 110%;
-  padding: 10px;
+  width: 100%;
+  padding: 0.75rem;
   box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
 
+.form-group input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
 .link {
-  font-family: "Poppins", sans-serif;
-  display: flex;
-  justify-content: center;
-  font-size: 20px;
-  width: 104%;
-  padding: 10px;
-  background-color: #000;
+  display: block;
+  text-align: center;
+  font-size: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4CAF50;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-top: 2px;
-  
-}
-.form-group label{
-  display: block;
-  margin-bottom: -15px;
+  margin-top: 0.5rem;
+  transition: background-color 0.3s ease;
 }
 
-button:hover {
-  background-color: #333;
+.link:hover {
+  background-color: #45a049;
 }
 
 .clave-Usuario {
-  font-size: 16px;
-  font: bold;
-  
-  
+  font-size: 1rem;
+  font-weight: bold;
+  color: #7f8c8d;
+  margin-top: 1rem;
+  text-align: center;
 }
-/* Dispositivos pequeños (móviles) */
-@media (max-width: 430px) {
-  .header h1 {
-    font-size: 1.5rem; /* Adjusted for smaller screens */
-    left: 10%; /* Centered */
-    top: 5%; /* Adjusted position */
-  }
 
-  .header img {
-    width: 10%; /* Larger image for visibility */
-    margin-left: 2%; /* Adjusted margin */
+/* Mobile Devices (up to 767px) */
+@media (max-width: 767px) {
+  .container {
+    flex-direction: column;
   }
 
   .left-section,
   .right-section {
-    width: 100%; /* Full width for sections */
+    width: 100%;
+    height: 50vh;
   }
 
-  .right-section {
-    font-size: 1.5rem; /* Smaller font size for better fit */
+  .header {
+    position: static;
+    justify-content: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.25rem;
   }
 
   .imagenPrincipal {
-    width: 100%; /* Full width for image */
-    height: auto; /* Keep aspect ratio */
+    width: 70%;
+    max-width: 250px;
   }
 
-  .link {
-    width: 100%; /* Full width for button */
+  form {
+    margin-top: -1rem;
   }
 }
 
-/* Dispositivos medianos (430px a 932px) */
-@media (min-width: 430px) and (max-width: 932px) {
+/* Tablet and Small Desktop Devices (768px to 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
   .header h1 {
-    font-size: 1.75rem; /* Adjusted for medium screens */
-    left: 5%; /* Positioned centrally */
-  }
-
-  .header img {
-    width: 5%; /* Adjusted size for visibility */
-  }
-
-  .left-section,
-  .right-section {
-    width: 50%; /* Maintain half-width for tablets */
-  }
-
-  .right-section {
-    font-size: 2rem; /* Kept larger for readability */
+    font-size: 1.5rem;
   }
 
   .imagenPrincipal {
-    width: 80%; /* Adjusted width for image */
-  }
-
-  .form-group input {
-    width: 100%; /* Fit within the container */
-  }
-
-  .link {
-    width: 100%; /* Full width for button */
+    width: 60%;
+    max-width: 300px;
   }
 }
