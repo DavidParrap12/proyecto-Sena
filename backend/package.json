@@ -6,7 +6,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "postinstall": "npm rebuild bcrypt --build-from-source"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
