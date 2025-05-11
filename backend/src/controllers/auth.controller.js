@@ -1,5 +1,5 @@
 // src/controllers/auth.controller.js
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import { createAccessToken } from '../libs/jwt.js';

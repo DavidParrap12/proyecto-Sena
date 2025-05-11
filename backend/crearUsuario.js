@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 // Cambia la URI si es necesario
 const MONGODB_URI = 'mongodb://localhost:27017/sgs_db';
