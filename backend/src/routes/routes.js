@@ -7,6 +7,8 @@ import {
     eliminarProducto 
 } from '../controllers/productoController.js';
 import { authRequired } from '../middlewares/ValidateToken.js';
+import ventasRouter from './ventas.routes.js';
+application.use('/api/ventas', ventasRouter);
 
 const router = express.Router();
 

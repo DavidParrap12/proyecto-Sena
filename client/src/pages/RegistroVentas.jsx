@@ -18,7 +18,7 @@ const RegistroVentas = () => {
     useEffect(() => {
         const fetchProductos = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/productos');
+                const response = await axios.get('http://localhost:3005/api/productos');
                 setProductosDisponibles(response.data);
             } catch (error) {
                 console.error("Error al cargar productos:", error);
@@ -63,34 +63,42 @@ const RegistroVentas = () => {
     };
 
     const registrarVenta = async () => {
-        if (!formData.cliente || !productos.length) {
+        if (!productos.length) {
+            alert("Debes agregar al menos un producto.");
             return;
         }
 
+        if (!user || !(user._id || user.id)) {
+            alert("No hay usuario autenticado. Por favor, inicia sesión nuevamente.");
+            console.error("Usuario no autenticado o sin _id:", user);
+            return;
+        }
+
+        const vendedorId = user._id || user.id;
+
         const ventaData = {
-            cliente: formData.cliente,
-            productos: productos.map(({ _id, cantidad }) => ({ 
-                producto: _id, 
-                cantidad 
+            productos: productos.map(({ _id, cantidad, precio }) => ({
+                producto: _id,
+                cantidad,
+                precioUnitario: precio
             })),
             total,
-            vendedor: user._id,
+            vendedor: vendedorId,
             fecha: new Date()
         };
 
         try {
-            await axios.post('http://localhost:5000/api/ventas', ventaData, {
+            await axios.post('http://localhost:3005/api/ventas', ventaData, {
                 withCredentials: true
             });
-            
-            // Reset all states at once
-            setFormData({ cliente: "", producto: "", cantidad: 1 });
+
+            setFormData({ producto: "", cantidad: 1 });
             setProductos([]);
             setTotal(0);
             alert("Venta registrada exitosamente");
         } catch (error) {
-            console.error("Error al registrar la venta:", error);
-            alert("Error al registrar la venta");
+            console.error("Error al registrar la venta:", error.response?.data || error);
+            alert("Error al registrar la venta: " + (error.response?.data?.message || "Error desconocido"));
         }
     };
 
@@ -105,17 +113,6 @@ const RegistroVentas = () => {
             <Navbar />
             <div className="registro-ventas">
                 <h2>Registro de Ventas</h2>
-
-                <div className="form-group">
-                    <label>Cliente:</label>
-                    <input
-                        type="text"
-                        name="cliente"
-                        placeholder="Nombre del cliente"
-                        value={formData.cliente}
-                        onChange={handleInputChange}
-                    />
-                </div>
 
                 <div className="producto-selector">
                     <select 
@@ -187,7 +184,7 @@ const RegistroVentas = () => {
                     <button 
                         className="btn-registrar"
                         onClick={registrarVenta}
-                        disabled={!formData.cliente || productos.length === 0}
+                        disabled={productos.length === 0}
                     >
                         <span>💾</span> Registrar Venta
                     </button>

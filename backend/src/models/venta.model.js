@@ -1,10 +1,6 @@
 import mongoose from 'mongoose';
 
 const ventaSchema = new mongoose.Schema({
-    cliente: {
-        type: String,
-        required: true
-    },
     productos: [{
         producto: {
             type: mongoose.Schema.Types.ObjectId,

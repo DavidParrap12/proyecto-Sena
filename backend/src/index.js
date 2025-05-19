@@ -9,11 +9,14 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import productoRouter from './routes/producto.routes.js';
 import authRouter from './routes/auth.routes.js';
+import ventasRouter from './routes/ventas.routes.js';
+import reportesRouter from './routes/reportes.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Cargar variables de entorno
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3005;
@@ -27,11 +30,16 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
-console.log('MongoDB URI:', process.env.MONGO_URI);
+// Verificar variables de entorno
+console.log('Environment variables:', {
+    MONGODB_URI: process.env.MONGODB_URI,
+    PORT: process.env.PORT,
+    NODE_ENV: process.env.NODE_ENV
+});
 
 // Conectar a MongoDB
 // MongoDB connection with options
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGODB_URI, {
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
 })
@@ -49,6 +57,8 @@ mongoose.connect(process.env.MONGO_URI, {
 // Rutas
 app.use('/api', productoRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/ventas', ventasRouter);
+app.use('/api/reportes', reportesRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -59,11 +69,18 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Remove this second app.listen call
-// app.listen(port, () => {
-//     console.log(`Servidor corriendo en http://localhost:${port}`);
-// });
+// Al inicio de tu aplicación
+if (!process.env.MONGODB_URI) {
+    console.error('Error: La URL de MongoDB no está definida en el archivo .env');
+    console.error('Obtén la nueva URL de Railway.com y actualiza tu archivo .env');
+    process.exit(1);
+}
 
+// Puedes añadir una validación básica de formato
+if (!process.env.MONGODB_URI.startsWith('mongodb://') && !process.env.MONGODB_URI.startsWith('mongodb+srv://')) {
+    console.error('Error: La URL de MongoDB tiene un formato incorrecto');
+    process.exit(1);
+}
 
 
 

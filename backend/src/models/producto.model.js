@@ -1,36 +1,45 @@
+// src/models/Producto.js
 import mongoose from 'mongoose';
 
 const productoSchema = new mongoose.Schema({
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true
+    },
     nombre: {
         type: String,
-        required: true
-    },
-    descripcion: {
-        type: String,
-        required: true
+        required: [true, 'El nombre del producto es obligatorio'],
+        trim: true
     },
     precio: {
         type: Number,
-        required: true,
-        min: 0
+        required: [true, 'El precio es obligatorio'],
+        min: [0, 'El precio no puede ser negativo']
+    },
+    // Eliminamos descripcion aquí temporalmente
+    categoria: {
+        type: String,
+        required: [true, 'La categoría es obligatoria'],
+        trim: true
     },
     cantidad: {
         type: Number,
-        required: true,
-        min: 0,
+        required: [true, 'El stock es obligatorio'],
+        min: [0, 'El stock no puede ser negativo'],
         default: 0
-    },
-    categoria: {
+    }
+}, {
+    timestamps: true
+});
+
+// Ahora volvemos a agregar descripcion como opcional
+productoSchema.add({
+    descripcion: {
         type: String,
-        required: true
-    },
-    imagen: {
-        type: String
-    },
-    fechaCreacion: {
-        type: Date,
-        default: Date.now
+        trim: true
     }
 });
 
-export default mongoose.models.Producto || mongoose.model('Producto', productoSchema); 
+const Producto = mongoose.model('Producto', productoSchema);
+
+export default Producto;

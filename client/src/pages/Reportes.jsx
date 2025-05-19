@@ -14,6 +14,8 @@ import {
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 import "../styles/styleReportes.css";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 ChartJS.register(
     CategoryScale,
@@ -30,25 +32,31 @@ const Reportes = () => {
         ventas: [],
         productosVendidos: [],
         ingresos: 0,
-        cantidad: []
+        inventario: []
     });
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
+    const [fechaSeleccionada, setFechaSeleccionada] = useState('');
 
     useEffect(() => {
         const fetchReportData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/reportes', {
+                const response = await axios.get('http://localhost:3005/api/reportes', {
                     withCredentials: true
                 });
-                setReportData(response.data);
+                setReportData({
+                    ventas: response.data.ventas || [],
+                    productosVendidos: response.data.productosVendidos || [],
+                    ingresos: response.data.ingresos || 0,
+                    inventario: response.data.cantidad || []
+                });
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching report data:', error);
                 setLoading(false);
             }
         };
-
+    
         fetchReportData();
     }, []);
 
@@ -79,6 +87,31 @@ const Reportes = () => {
         }]
     };
 
+    // Filtrar datos por la fecha seleccionada
+    const datosFiltrados = fechaSeleccionada
+        ? reportData.ventas.filter(d => d.fecha.substring(0, 10) === fechaSeleccionada)
+        : reportData.ventas;
+
+    // Calcular ingresos totales del filtro
+    const ingresosTotales = datosFiltrados.reduce((acc, d) => acc + d.total, 0);
+
+    const generarPDF = () => {
+        const doc = new jsPDF();
+
+        doc.text("Reporte de Ventas", 14, 15);
+        doc.text(`Fecha: ${fechaSeleccionada || 'Todas'}`, 14, 25);
+        doc.text(`Ventas Totales: ${datosFiltrados.length}`, 14, 35);
+        doc.text(`Ingresos Totales: $${ingresosTotales}`, 14, 45);
+
+        doc.autoTable({
+            startY: 55,
+            head: [['Fecha', 'Ingresos']],
+            body: datosFiltrados.map(item => [item.fecha.substring(0, 10), `$${item.total}`]),
+        });
+
+        doc.save("reporte_ventas.pdf");
+    };
+
     if (loading) {
         return <div className="loading">Cargando reportes...</div>;
     }
@@ -99,8 +132,8 @@ const Reportes = () => {
                         <p className="stat-value">{reportData.ventas.length}</p>
                     </div>
                     <div className="stat-card">
-                        <h3>Productos en Cantidad</h3>
-                        <p className="stat-value">{reportData.cantidad.length}</p>
+                        <h3>Productos en Inventario</h3>
+                        <p className="stat-value">{reportData.inventario.length}</p>
                     </div>
                 </div>
 
@@ -124,38 +157,72 @@ const Reportes = () => {
                                 legend: { position: 'right' }
                             }
                         }} />
+                        {/* Tabla de productos más vendidos */}
+                        <table style={{marginTop: "20px", width: "100%"}}>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad Vendida</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {reportData.productosVendidos.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={2}>No hay datos de productos vendidos</td>
+                                    </tr>
+                                ) : (
+                                    reportData.productosVendidos.map((prod, idx) => (
+                                        <tr key={idx}>
+                                            <td>{prod.nombre}</td>
+                                            <td>{prod.cantidad}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div className="cantidad-table">
-                    <h3>Estado del Inventario</h3>
+                {/* Subir el detalle de ventas aquí */}
+                <div className="report-tables">
+                    <h2>Detalle de Ventas</h2>
                     <table>
                         <thead>
                             <tr>
-                                <th>Producto</th>
-                                <th>Cantidad Actual</th>
-                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Ingresos</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {reportData.cantidad.map((item) => (
+                            {datosFiltrados.map(item => (
                                 <tr key={item._id}>
-                                    <td>{item.nombre}</td>
-                                    <td>{item.cantidad}</td>
-                                    <td>
-                                        <span className={`cantidad-status ${
-                                            item.cantidad > 10 ? 'good' :
-                                            item.cantidad > 5 ? 'warning' : 'critical'
-                                        }`}>
-                                            {item.cantidad > 10 ? 'Óptimo' :
-                                                item.cantidad > 5 ? 'Bajo' : 'Crítico'}
-                                        </span>
-                                    </td>
+                                    <td>{item.fecha.substring(0, 10)}</td>
+                                    <td>${item.total}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+
+                {/* Colocar el botón de PDF aquí */}
+                <div className="report-controls">
+                    <div className="fecha-selector">
+                        <label>
+                            Selecciona una fecha:
+                            <input
+                                type="date"
+                                value={fechaSeleccionada}
+                                onChange={e => setFechaSeleccionada(e.target.value)}
+                            />
+                        </label>
+                    </div>
+                    <button className="pdf-button" onClick={generarPDF}>
+                        <i className="fas fa-file-pdf"></i> Generar PDF
+                    </button>
+                </div>
+
+                {/* Eliminar la tabla de estado del inventario de aquí */}
+                {/* <div className="cantidad-table"> ... </div> */}
             </div>
         </div>
     );
