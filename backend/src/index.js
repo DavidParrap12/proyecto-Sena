@@ -58,7 +58,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use('/api', productoRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/ventas', ventasRouter);
-app.use('/api/reportes', reportesRouter);
+app.use('/api', reportesRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

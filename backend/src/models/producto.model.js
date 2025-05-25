@@ -6,6 +6,13 @@ const productoSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         auto: true
     },
+    codigo: {
+        type: String,
+        required: [true, 'El código del producto es obligatorio'],
+        unique: true,
+        trim: true,
+        uppercase: true
+    },
     nombre: {
         type: String,
         required: [true, 'El nombre del producto es obligatorio'],
@@ -24,21 +31,14 @@ const productoSchema = new mongoose.Schema({
     },
     cantidad: {
         type: Number,
-        required: [true, 'El stock es obligatorio'],
-        min: [0, 'El stock no puede ser negativo'],
+        required: [true, 'la cantidad es obligatorio'],
+        min: [0, 'la cantidad no puede ser negativo'],
         default: 0
     }
 }, {
     timestamps: true
 });
 
-// Ahora volvemos a agregar descripcion como opcional
-productoSchema.add({
-    descripcion: {
-        type: String,
-        trim: true
-    }
-});
 
 const Producto = mongoose.model('Producto', productoSchema);
 

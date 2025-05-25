@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { generarReporte } from '../controllers/reportes.controller.js';
-import { authRequired } from '../middlewares/ValidateToken.js';
+import { authRequired } from '../middlewares/validateToken.js';
 
 const router = Router();
 
-router.get('/', authRequired, generarReporte);
+router.get('/reportes', authRequired, generarReporte);
 
 export default router;

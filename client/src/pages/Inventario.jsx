@@ -14,6 +14,7 @@ function GestionInventario() {
     const [busqueda, setBusqueda] = useState("");
     const [productoEditando, setProductoEditando] = useState(null);
     const [nuevoProducto, setNuevoProducto] = useState({
+        codigo: "",
         nombre: "",
         categoria: "",
         precio: "",
@@ -37,8 +38,8 @@ function GestionInventario() {
     const handleAgregar = async () => {
         // Validaciones
         if (
+            !nuevoProducto.codigo.trim() ||
             !nuevoProducto.nombre.trim() ||
-            !nuevoProducto.descripcion.trim() ||
             !nuevoProducto.categoria.trim() ||
             !nuevoProducto.precio ||
             !nuevoProducto.cantidad
@@ -54,14 +55,14 @@ function GestionInventario() {
             alert("La cantidad debe ser un número igual o mayor a 0.");
             return;
         }
-
+    
         try {
             await axios.post(
                 'http://localhost:3005/api/productos',
                 nuevoProducto,
                 { withCredentials: true }
             );
-            setNuevoProducto({ nombre: "", categoria: "", precio: "", cantidad: "" });
+            setNuevoProducto({ codigo: "", nombre: "", categoria: "", precio: "", cantidad: "" });
             fetchProductos();
             alert("¡Producto agregado exitosamente!");
         } catch (error) {
@@ -78,7 +79,11 @@ function GestionInventario() {
         if (productoEditando === id) {
             try {
                 const productoActualizado = productos.find(p => p._id === id);
-                await axios.put(`http://localhost:3005/api/productos/${id}`, productoActualizado);
+                await axios.put(
+                    `http://localhost:3005/api/productos/${id}`, 
+                    productoActualizado,
+                    { withCredentials: true }
+                );
                 setProductoEditando(null);
                 fetchProductos();
             } catch (error) {
@@ -92,10 +97,14 @@ function GestionInventario() {
     const handleEliminar = async (id) => {
         if (window.confirm("¿Está seguro de eliminar este producto?")) {
             try {
-                await axios.delete(`http://localhost:3005/api/productos/${id}`);
+                await axios.delete(
+                    `http://localhost:3005/api/productos/${id}`,
+                    { withCredentials: true }
+                );
                 fetchProductos();
             } catch (error) {
                 console.error("Error al eliminar producto:", error);
+                alert("Error al eliminar producto: " + (error.response?.data?.message || "Error desconocido"));
             }
         }
     };
@@ -104,10 +113,10 @@ function GestionInventario() {
         setBusqueda(e.target.value);
     };
 
-    // Función para exportar a Excel
     const exportarAExcel = () => {
         // Crear una copia de los datos para manipularlos
         const datosParaExportar = productos.map(producto => ({
+            'Código': producto.codigo || 'N/A',
             'Nombre': producto.nombre,
             'Categoría': producto.categoria,
             'Precio': producto.precio,
@@ -251,6 +260,13 @@ function GestionInventario() {
                     <div className="form-producto">
                         <input
                             type="text"
+                            placeholder="Código (ej: PROD001)"
+                            value={nuevoProducto.codigo}
+                            onChange={e => setNuevoProducto({...nuevoProducto, codigo: e.target.value.toUpperCase()})}
+                            style={{textTransform: 'uppercase'}}
+                        />
+                        <input
+                            type="text"
                             placeholder="Nombre"
                             value={nuevoProducto.nombre}
                             onChange={e => setNuevoProducto({...nuevoProducto, nombre: e.target.value})}
@@ -282,6 +298,7 @@ function GestionInventario() {
                     <table>
                         <thead>
                             <tr>
+                                <th>Código</th>
                                 <th>Nombre</th>
                                 <th>Categoría</th>
                                 <th>Precio</th>
@@ -292,6 +309,20 @@ function GestionInventario() {
                         <tbody>
                             {productosFiltrados.map(producto => (
                                 <tr key={producto._id}>
+                                    <td>
+                                        {productoEditando === producto._id ? (
+                                            <input
+                                                value={producto.codigo || ''}
+                                                onChange={e => {
+                                                    const newProductos = productos.map(p =>
+                                                        p._id === producto._id ? {...p, codigo: e.target.value.toUpperCase()} : p
+                                                    );
+                                                    setProductos(newProductos);
+                                                }}
+                                                style={{textTransform: 'uppercase'}}
+                                            />
+                                        ) : (producto.codigo || 'N/A')}
+                                    </td>
                                     <td>
                                         {productoEditando === producto._id ? (
                                             <input
@@ -347,18 +378,22 @@ function GestionInventario() {
                                         ) : producto.cantidad}
                                     </td>
                                     <td>
-                                        <button 
-                                            className="btn-accion btn-editar"
-                                            onClick={() => handleEditar(producto._id)}
-                                        >
-                                            <span>✏️</span> {productoEditando === producto._id ? 'Guardar' : 'Editar'}
-                                        </button>
-                                        <button 
-                                            className="btn-accion btn-eliminar"
-                                            onClick={() => handleEliminar(producto._id)}
-                                        >
-                                            <span>🗑️</span> Eliminar
-                                        </button>
+                                        <div className="botones-accion">
+                                            <button 
+                                                className="btn-accion-small btn-editar"
+                                                onClick={() => handleEditar(producto._id)}
+                                                title={productoEditando === producto._id ? 'Guardar' : 'Editar'}
+                                            >
+                                                {productoEditando === producto._id ? '💾' : '✏️'}
+                                            </button>
+                                            <button 
+                                                className="btn-accion-small btn-eliminar"
+                                                onClick={() => handleEliminar(producto._id)}
+                                                title="Eliminar"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

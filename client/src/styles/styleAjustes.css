@@ -1,7 +1,6 @@
 .principal-container,
 .inventario-container,
-.ventas-container,
-.reportes-container {
+.ventas-container{
     padding-top: 60px; /* Height of the header */
     min-height: 100vh;
 }

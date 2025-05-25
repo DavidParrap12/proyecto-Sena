@@ -13,6 +13,8 @@ const RegistroVentas = () => {
     const [productos, setProductos] = useState([]);
     const [productosDisponibles, setProductosDisponibles] = useState([]);
     const [total, setTotal] = useState(0);
+    const [codigoBusqueda, setCodigoBusqueda] = useState("");
+    const [productoEncontrado, setProductoEncontrado] = useState(null);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -108,13 +110,108 @@ const RegistroVentas = () => {
         setProductos(prevProductos => prevProductos.filter(p => p.id !== id));
     };
 
+    const buscarPorCodigo = async () => {
+        if (!codigoBusqueda.trim()) {
+            alert("Ingresa un código para buscar");
+            return;
+        }
+
+        try {
+            const response = await axios.get(`http://localhost:3005/api/productos/codigo/${codigoBusqueda}`);
+            setProductoEncontrado(response.data);
+            // Automáticamente seleccionar el producto encontrado
+            setFormData(prev => ({
+                ...prev,
+                producto: response.data._id
+            }));
+        } catch (error) {
+            alert("Producto no encontrado");
+            setProductoEncontrado(null);
+            console.error("Error al buscar producto:", error);
+        }
+    };
+
+    // Función para agregar directamente desde la búsqueda
+    const agregarProductoEncontrado = () => {
+        if (!productoEncontrado) return;
+        
+        const cantidad = parseInt(formData.cantidad);
+        const { _id, codigo, nombre, precio } = productoEncontrado;
+    
+        setProductos(prevProductos => [
+            ...prevProductos,
+            {
+                id: Date.now(),
+                _id,
+                nombre,
+                cantidad,
+                precio,
+                subtotal: precio * cantidad
+            }
+        ]);
+        setTotal(prevTotal => prevTotal + (precio * cantidad));
+        
+        // Limpiar búsqueda después de agregar
+        setCodigoBusqueda("");
+        setProductoEncontrado(null);
+        setFormData(prev => ({ ...prev, producto: "", cantidad: 1 }));
+    };
+
     return (
         <div className="registro-ventas-container">
             <Navbar />
             <div className="registro-ventas">
                 <h2>Registro de Ventas</h2>
 
+                {/* Buscador por código mejorado */}
+                <div className="buscador-codigo">
+                    <h3>Buscar por Código</h3>
+                    <div className="codigo-search">
+                        <input
+                            type="text"
+                            placeholder="Ingresa el código del producto"
+                            value={codigoBusqueda}
+                            onChange={(e) => setCodigoBusqueda(e.target.value.toUpperCase())}
+                            onKeyPress={(e) => e.key === 'Enter' && buscarPorCodigo()}
+                        />
+                        <button onClick={buscarPorCodigo} className="btn-buscar">
+                            🔍 Buscar
+                        </button>
+                    </div>
+                    {productoEncontrado && (
+                        <div className="producto-encontrado">
+                            <div className="info-producto">
+                                <h4>Producto Encontrado:</h4>
+                                <p><strong>Código:</strong> {productoEncontrado.codigo}</p>
+                                <p><strong>Nombre:</strong> {productoEncontrado.nombre}</p>
+                                <p><strong>Precio:</strong> ${productoEncontrado.precio}</p>
+                                <p><strong>Stock:</strong> {productoEncontrado.cantidad} unidades</p>
+                            </div>
+                            <div className="acciones-producto">
+                                <input
+                                    type="number"
+                                    name="cantidad"
+                                    min="1"
+                                    max={productoEncontrado.cantidad}
+                                    value={formData.cantidad}
+                                    onChange={handleInputChange}
+                                    placeholder="Cantidad"
+                                />
+                                <button 
+                                    onClick={agregarProductoEncontrado}
+                                    className="btn-agregar-encontrado"
+                                    disabled={formData.cantidad < 1 || formData.cantidad > productoEncontrado.cantidad}
+                                >
+                                    ➕ Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Selector tradicional de productos */}
                 <div className="producto-selector">
+                    <h3>O selecciona de la lista:</h3>
                     <select 
                         name="producto"
                         value={formData.producto}
@@ -124,7 +221,7 @@ const RegistroVentas = () => {
                         {productosDisponibles.length > 0 ? (
                             productosDisponibles.map(prod => (
                                 <option key={prod._id} value={prod._id}>
-                                    {prod.nombre} - ${prod.precio}
+                                    {prod.codigo} - {prod.nombre} - ${prod.precio}
                                 </option>
                             ))
                         ) : (
@@ -137,6 +234,7 @@ const RegistroVentas = () => {
                         min="1"
                         value={formData.cantidad}
                         onChange={handleInputChange}
+                        placeholder="Cantidad"
                     />
                     <button 
                         onClick={agregarProducto}

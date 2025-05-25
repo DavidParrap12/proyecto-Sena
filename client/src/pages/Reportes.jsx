@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/authContext";
 import Navbar from "../components/Navbar";
 import axios from "axios";
@@ -9,10 +9,9 @@ import {
     BarElement,
     Title,
     Tooltip,
-    Legend,
-    ArcElement
+    Legend
 } from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import "../styles/styleReportes.css";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
@@ -23,14 +22,12 @@ ChartJS.register(
     BarElement,
     Title,
     Tooltip,
-    Legend,
-    ArcElement
+    Legend
 );
 
 const Reportes = () => {
     const [reportData, setReportData] = useState({
         ventas: [],
-        productosVendidos: [],
         ingresos: 0,
         inventario: []
     });
@@ -46,9 +43,8 @@ const Reportes = () => {
                 });
                 setReportData({
                     ventas: response.data.ventas || [],
-                    productosVendidos: response.data.productosVendidos || [],
                     ingresos: response.data.ingresos || 0,
-                    inventario: response.data.cantidad || []
+                    inventario: response.data.inventario || []
                 });
                 setLoading(false);
             } catch (error) {
@@ -71,22 +67,6 @@ const Reportes = () => {
         }]
     };
 
-    const productosChartData = {
-        labels: reportData.productosVendidos.map(prod => prod.nombre),
-        datasets: [{
-            label: 'Productos más vendidos',
-            data: reportData.productosVendidos.map(prod => prod.cantidad),
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.5)',
-                'rgba(54, 162, 235, 0.5)',
-                'rgba(255, 206, 86, 0.5)',
-                'rgba(75, 192, 192, 0.5)',
-                'rgba(153, 102, 255, 0.5)'
-            ],
-            borderWidth: 1
-        }]
-    };
-
     // Filtrar datos por la fecha seleccionada
     const datosFiltrados = fechaSeleccionada
         ? reportData.ventas.filter(d => d.fecha.substring(0, 10) === fechaSeleccionada)
@@ -97,7 +77,6 @@ const Reportes = () => {
 
     const generarPDF = () => {
         const doc = new jsPDF();
-
         doc.text("Reporte de Ventas", 14, 15);
         doc.text(`Fecha: ${fechaSeleccionada || 'Todas'}`, 14, 25);
         doc.text(`Ventas Totales: ${datosFiltrados.length}`, 14, 35);
@@ -148,42 +127,8 @@ const Reportes = () => {
                             }
                         }} />
                     </div>
-
-                    <div className="chart-container">
-                        <h3>Productos más Vendidos</h3>
-                        <Pie data={productosChartData} options={{
-                            responsive: true,
-                            plugins: {
-                                legend: { position: 'right' }
-                            }
-                        }} />
-                        {/* Tabla de productos más vendidos */}
-                        <table style={{marginTop: "20px", width: "100%"}}>
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad Vendida</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {reportData.productosVendidos.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={2}>No hay datos de productos vendidos</td>
-                                    </tr>
-                                ) : (
-                                    reportData.productosVendidos.map((prod, idx) => (
-                                        <tr key={idx}>
-                                            <td>{prod.nombre}</td>
-                                            <td>{prod.cantidad}</td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
-                {/* Subir el detalle de ventas aquí */}
                 <div className="report-tables">
                     <h2>Detalle de Ventas</h2>
                     <table>
@@ -204,7 +149,6 @@ const Reportes = () => {
                     </table>
                 </div>
 
-                {/* Colocar el botón de PDF aquí */}
                 <div className="report-controls">
                     <div className="fecha-selector">
                         <label>
@@ -220,9 +164,6 @@ const Reportes = () => {
                         <i className="fas fa-file-pdf"></i> Generar PDF
                     </button>
                 </div>
-
-                {/* Eliminar la tabla de estado del inventario de aquí */}
-                {/* <div className="cantidad-table"> ... </div> */}
             </div>
         </div>
     );

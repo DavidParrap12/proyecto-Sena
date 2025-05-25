@@ -11,17 +11,36 @@ export const getProductos = async (req, res) => {
 
 export const createProducto = async (req, res) => {
     try {
-        const { nombre, categoria, precio, stock } = req.body;
+        const { codigo, nombre, categoria, precio, cantidad } = req.body;
         const nuevoProducto = new Producto({
+            codigo,
             nombre,
             categoria,
             precio,
-            stock
+            cantidad
         });
         const productoGuardado = await nuevoProducto.save();
         res.status(201).json(productoGuardado);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        if (error.code === 11000) {
+            res.status(400).json({ message: "El código del producto ya existe" });
+        } else {
+            res.status(400).json({ message: error.message });
+        }
+    }
+};
+
+// Agregar función para buscar por código
+export const buscarProductoPorCodigo = async (req, res) => {
+    try {
+        const { codigo } = req.params;
+        const producto = await Producto.findOne({ codigo: codigo.toUpperCase() });
+        if (!producto) {
+            return res.status(404).json({ message: "Producto no encontrado" });
+        }
+        res.json(producto);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };
 
