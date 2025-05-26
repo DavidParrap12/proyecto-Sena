@@ -148,7 +148,7 @@ function Principal() {
                     </div>
 
                     <div className="dashboard-card promociones">
-                        <div className="card-icon">🎉</div>
+                        <div className="card-icon">🔖</div>
                         <div className="card-content">
                             <h3>Promociones Activas</h3>
                             <ul className="card-list">

@@ -6,7 +6,6 @@ import Principal from '../pages/Principal.jsx';
 import Inventario from '../pages/Inventario.jsx';
 import RegistroVentas from '../pages/RegistroVentas';
 import Reportes from '../pages/Reportes.jsx';
-import Ajustes from '../pages/Ajustes.jsx';
 import '../styles/index.css';
 import '../styles/reset.css';
 
@@ -19,7 +18,6 @@ function App() {
       <Route path="/inventario" element={<Inventario />} />
       <Route path="/ventas" element={<RegistroVentas />} />
       <Route path="/reportes" element={<Reportes />} />
-      <Route path="/ajustes" element={<Ajustes />} />
     </Routes>
   );
 }

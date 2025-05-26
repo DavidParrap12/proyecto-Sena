@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/authContext";
 import Navbar from "../components/Navbar";
 import axios from "axios";
@@ -15,6 +15,9 @@ const RegistroVentas = () => {
     const [total, setTotal] = useState(0);
     const [codigoBusqueda, setCodigoBusqueda] = useState("");
     const [productoEncontrado, setProductoEncontrado] = useState(null);
+    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+    const [errors, setErrors] = useState({});
+    const [showHelp, setShowHelp] = useState(false);
     const { user } = useAuth();
 
     useEffect(() => {
@@ -29,22 +32,63 @@ const RegistroVentas = () => {
         fetchProductos();
     }, []);
 
+    // Actualizar producto seleccionado cuando cambie la selección
+    useEffect(() => {
+        if (formData.producto) {
+            const producto = productosDisponibles.find(p => p._id === formData.producto);
+            setProductoSeleccionado(producto);
+        } else {
+            setProductoSeleccionado(null);
+        }
+    }, [formData.producto, productosDisponibles]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
+        // Validaciones en tiempo real
+        if (name === 'cantidad') {
+            const cantidad = parseInt(value);
+            if (cantidad <= 0) {
+                setErrors(prev => ({ ...prev, cantidad: 'La cantidad debe ser mayor a 0' }));
+            } else {
+                setErrors(prev => ({ ...prev, cantidad: '' }));
+            }
+        }
+        
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
     };
 
+    const validarFormulario = () => {
+        const newErrors = {};
+        
+        if (!formData.producto) {
+            newErrors.producto = 'Debes seleccionar un producto';
+        }
+        
+        if (!formData.cantidad || formData.cantidad <= 0) {
+            newErrors.cantidad = 'La cantidad debe ser mayor a 0';
+        }
+        
+        const producto = productosDisponibles.find(p => p._id === formData.producto);
+        if (producto && formData.cantidad > producto.cantidad) {
+            newErrors.cantidad = `Stock insuficiente. Disponible: ${producto.cantidad}`;
+        }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const agregarProducto = () => {
+        if (!validarFormulario()) {
+            return;
+        }
+
         const productoSeleccionado = productosDisponibles.find(
             ({ _id }) => _id === formData.producto
         );
-
-        if (!productoSeleccionado) {
-            return;
-        }
 
         const { _id, nombre, precio } = productoSeleccionado;
         const cantidad = parseInt(formData.cantidad);
@@ -62,17 +106,20 @@ const RegistroVentas = () => {
         ]);
         setTotal(prevTotal => prevTotal + (precio * cantidad));
         setFormData(prev => ({ ...prev, producto: "", cantidad: 1 }));
+        setErrors({});
+        
+        // Mostrar notificación de éxito
+        showNotification('Producto agregado al carrito', 'success');
     };
 
     const registrarVenta = async () => {
         if (!productos.length) {
-            alert("Debes agregar al menos un producto.");
+            showNotification("Debes agregar al menos un producto.", 'error');
             return;
         }
 
         if (!user || !(user._id || user.id)) {
-            alert("No hay usuario autenticado. Por favor, inicia sesión nuevamente.");
-            console.error("Usuario no autenticado o sin _id:", user);
+            showNotification("No hay usuario autenticado. Por favor, inicia sesión nuevamente.", 'error');
             return;
         }
 
@@ -97,10 +144,10 @@ const RegistroVentas = () => {
             setFormData({ producto: "", cantidad: 1 });
             setProductos([]);
             setTotal(0);
-            alert("Venta registrada exitosamente");
+            showNotification("Venta registrada exitosamente", 'success');
         } catch (error) {
             console.error("Error al registrar la venta:", error.response?.data || error);
-            alert("Error al registrar la venta: " + (error.response?.data?.message || "Error desconocido"));
+            showNotification("Error al registrar la venta: " + (error.response?.data?.message || "Error desconocido"), 'error');
         }
     };
 
@@ -108,34 +155,39 @@ const RegistroVentas = () => {
         const producto = productos.find(p => p.id === id);
         setTotal(prevTotal => prevTotal - producto.subtotal);
         setProductos(prevProductos => prevProductos.filter(p => p.id !== id));
+        showNotification('Producto eliminado del carrito', 'info');
     };
 
     const buscarPorCodigo = async () => {
         if (!codigoBusqueda.trim()) {
-            alert("Ingresa un código para buscar");
+            showNotification("Ingresa un código para buscar", 'warning');
             return;
         }
 
         try {
             const response = await axios.get(`http://localhost:3005/api/productos/codigo/${codigoBusqueda}`);
             setProductoEncontrado(response.data);
-            // Automáticamente seleccionar el producto encontrado
             setFormData(prev => ({
                 ...prev,
                 producto: response.data._id
             }));
+            showNotification('Producto encontrado', 'success');
         } catch (error) {
-            alert("Producto no encontrado");
+            showNotification("Producto no encontrado", 'error');
             setProductoEncontrado(null);
-            console.error("Error al buscar producto:", error);
         }
     };
 
-    // Función para agregar directamente desde la búsqueda
     const agregarProductoEncontrado = () => {
         if (!productoEncontrado) return;
         
         const cantidad = parseInt(formData.cantidad);
+        
+        if (cantidad <= 0 || cantidad > productoEncontrado.cantidad) {
+            showNotification('Cantidad inválida', 'error');
+            return;
+        }
+        
         const { _id, codigo, nombre, precio } = productoEncontrado;
     
         setProductos(prevProductos => [
@@ -151,140 +203,245 @@ const RegistroVentas = () => {
         ]);
         setTotal(prevTotal => prevTotal + (precio * cantidad));
         
-        // Limpiar búsqueda después de agregar
         setCodigoBusqueda("");
         setProductoEncontrado(null);
         setFormData(prev => ({ ...prev, producto: "", cantidad: 1 }));
+        showNotification('Producto agregado al carrito', 'success');
+    };
+
+    const showNotification = (message, type) => {
+        // Crear elemento de notificación
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Agregar al DOM
+        document.body.appendChild(notification);
+        
+        // Remover después de 3 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     };
 
     return (
-        <div className="registro-ventas-container">
+        <div className="ventas-container">
             <Navbar />
             <div className="registro-ventas">
-                <h2>Registro de Ventas</h2>
+                <div className="header-section">
+                    <h2>📊 Registro de Ventas</h2>
+                    <button 
+                        className="help-button"
+                        onClick={() => setShowHelp(!showHelp)}
+                        title="Ayuda"
+                    >
+                        ❓
+                    </button>
+                </div>
+
+                {showHelp && (
+                    <div className="help-section">
+                        <h4>💡 ¿Cómo registrar una venta?</h4>
+                        <ol>
+                            <li>Busca el producto por código o selecciónalo de la lista</li>
+                            <li>Ingresa la cantidad deseada</li>
+                            <li>Haz clic en "Agregar al carrito"</li>
+                            <li>Repite para más productos</li>
+                            <li>Revisa el total y confirma la venta</li>
+                        </ol>
+                    </div>
+                )}
 
                 {/* Buscador por código mejorado */}
-                <div className="buscador-codigo">
-                    <h3>Buscar por Código</h3>
-                    <div className="codigo-search">
-                        <input
-                            type="text"
-                            placeholder="Ingresa el código del producto"
-                            value={codigoBusqueda}
-                            onChange={(e) => setCodigoBusqueda(e.target.value.toUpperCase())}
-                            onKeyPress={(e) => e.key === 'Enter' && buscarPorCodigo()}
-                        />
-                        <button onClick={buscarPorCodigo} className="btn-buscar">
-                            🔍 Buscar
-                        </button>
+                <div className="search-card">
+                    <div className="card-header">
+                        <h3>🔍 Búsqueda Rápida por Código</h3>
                     </div>
-                    {productoEncontrado && (
-                        <div className="producto-encontrado">
-                            <div className="info-producto">
-                                <h4>Producto Encontrado:</h4>
-                                <p><strong>Código:</strong> {productoEncontrado.codigo}</p>
-                                <p><strong>Nombre:</strong> {productoEncontrado.nombre}</p>
-                                <p><strong>Precio:</strong> ${productoEncontrado.precio}</p>
-                                <p><strong>Stock:</strong> {productoEncontrado.cantidad} unidades</p>
+                    <div className="card-body">
+                        <div className="search-input-group">
+                            <input
+                                type="text"
+                                placeholder="Escanea o ingresa el código del producto"
+                                value={codigoBusqueda}
+                                onChange={(e) => setCodigoBusqueda(e.target.value.toUpperCase())}
+                                onKeyPress={(e) => e.key === 'Enter' && buscarPorCodigo()}
+                                className="search-input"
+                            />
+                            <button onClick={buscarPorCodigo} className="btn-search">
+                                🔍 Buscar
+                            </button>
+                        </div>
+                        
+                        {productoEncontrado && (
+                            <div className="product-found">
+                                <div className="product-info">
+                                    <h4>✅ Producto Encontrado</h4>
+                                    <div className="product-details">
+                                        <span className="detail-item">
+                                            <strong>Código:</strong> {productoEncontrado.codigo}
+                                        </span>
+                                        <span className="detail-item">
+                                            <strong>Nombre:</strong> {productoEncontrado.nombre}
+                                        </span>
+                                        <span className="detail-item price">
+                                            <strong>Precio:</strong> ${productoEncontrado.precio.toLocaleString()}
+                                        </span>
+                                        <span className="detail-item stock">
+                                            <strong>Stock:</strong> {productoEncontrado.cantidad} unidades
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="product-actions">
+                                    <div className="quantity-input">
+                                        <label>Cantidad:</label>
+                                        <input
+                                            type="number"
+                                            name="cantidad"
+                                            min="1"
+                                            max={productoEncontrado.cantidad}
+                                            value={formData.cantidad}
+                                            onChange={handleInputChange}
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={agregarProductoEncontrado}
+                                        className="btn-add-found"
+                                        disabled={formData.cantidad < 1 || formData.cantidad > productoEncontrado.cantidad}
+                                    >
+                                        🛒 Agregar al Carrito
+                                    </button>
+                                </div>
                             </div>
-                            <div className="acciones-producto">
+                        )}
+                    </div>
+                </div>
+
+                {/* Selector tradicional mejorado */}
+                <div className="selection-card">
+                    <div className="card-header">
+                        <h3>📋 Selección Manual de Productos</h3>
+                    </div>
+                    <div className="card-body">
+                        <div className="form-row">
+                            <div className="form-field">
+                                <label htmlFor="producto">Selecciona un producto:</label>
+                                <select 
+                                    id="producto"
+                                    name="producto"
+                                    value={formData.producto}
+                                    onChange={handleInputChange}
+                                    className={errors.producto ? 'error' : ''}
+                                >
+                                    <option value="">-- Seleccionar producto --</option>
+                                    {productosDisponibles.length > 0 ? (
+                                        productosDisponibles.map(prod => (
+                                            <option key={prod._id} value={prod._id}>
+                                                {prod.codigo} - {prod.nombre} - ${prod.precio.toLocaleString()}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option disabled>Cargando productos...</option>
+                                    )}
+                                </select>
+                                {errors.producto && <span className="error-message">{errors.producto}</span>}
+                            </div>
+                            
+                            <div className="form-field">
+                                <label htmlFor="cantidad">Cantidad:</label>
                                 <input
+                                    id="cantidad"
                                     type="number"
                                     name="cantidad"
                                     min="1"
-                                    max={productoEncontrado.cantidad}
+                                    max={productoSeleccionado?.cantidad || 999}
                                     value={formData.cantidad}
                                     onChange={handleInputChange}
-                                    placeholder="Cantidad"
+                                    className={errors.cantidad ? 'error' : ''}
                                 />
+                                {errors.cantidad && <span className="error-message">{errors.cantidad}</span>}
+                            </div>
+                            
+                            <div className="form-field">
+                                <label>&nbsp;</label>
                                 <button 
-                                    onClick={agregarProductoEncontrado}
-                                    className="btn-agregar-encontrado"
-                                    disabled={formData.cantidad < 1 || formData.cantidad > productoEncontrado.cantidad}
+                                    onClick={agregarProducto}
+                                    disabled={!formData.producto || formData.cantidad < 1 || Object.keys(errors).some(key => errors[key])}
+                                    className="btn-add-cart"
                                 >
-                                    ➕ Agregar al Carrito
+                                    🛒 Agregar al Carrito
                                 </button>
                             </div>
+                        </div>
+                        
+                        {productoSeleccionado && (
+                            <div className="selected-product-preview">
+                                <span className="preview-label">Producto seleccionado:</span>
+                                <span className="preview-name">{productoSeleccionado.nombre}</span>
+                                <span className="preview-price">${productoSeleccionado.precio.toLocaleString()}</span>
+                                <span className="preview-cantidad">Cantidad: {productoSeleccionado.cantidad}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Tabla del carrito */}
+                <div className="cart-section">
+                    <h3>🛒 Carrito de Compras</h3>
+                    {productos.length > 0 ? (
+                        <div className="cart-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio Unit.</th>
+                                        <th>Subtotal</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {productos.map((prod) => (
+                                        <tr key={prod.id}>
+                                            <td>{prod.nombre}</td>
+                                            <td>{prod.cantidad}</td>
+                                            <td>${prod.precio.toLocaleString()}</td>
+                                            <td>${prod.subtotal.toLocaleString()}</td>
+                                            <td>
+                                                <button 
+                                                    onClick={() => eliminarProducto(prod.id)}
+                                                    className="btn-remove"
+                                                    title="Eliminar producto"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="empty-cart">
+                            <p>🛒 El carrito está vacío</p>
+                            <small>Agrega productos para comenzar</small>
                         </div>
                     )}
                 </div>
 
-                {/* Selector tradicional de productos */}
-                <div className="producto-selector">
-                    <h3>O selecciona de la lista:</h3>
-                    <select 
-                        name="producto"
-                        value={formData.producto}
-                        onChange={handleInputChange}
-                    >
-                        <option value="">Seleccionar producto</option>
-                        {productosDisponibles.length > 0 ? (
-                            productosDisponibles.map(prod => (
-                                <option key={prod._id} value={prod._id}>
-                                    {prod.codigo} - {prod.nombre} - ${prod.precio}
-                                </option>
-                            ))
-                        ) : (
-                            <option disabled>Cargando productos...</option>
-                        )}
-                    </select>
-                    <input
-                        type="number"
-                        name="cantidad"
-                        min="1"
-                        value={formData.cantidad}
-                        onChange={handleInputChange}
-                        placeholder="Cantidad"
-                    />
-                    <button 
-                        onClick={agregarProducto}
-                        disabled={!formData.producto || formData.cantidad < 1}
-                        className="btn-agregar"
-                    >
-                        <span>➕</span> Agregar
-                    </button>
-                </div>
-
-                <div className="tabla-carrito">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unit.</th>
-                                <th>Subtotal</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productos.map((prod) => (
-                                <tr key={prod.id}>
-                                    <td>{prod.nombre}</td>
-                                    <td>{prod.cantidad}</td>
-                                    <td>${prod.precio}</td>
-                                    <td>${prod.subtotal}</td>
-                                    <td>
-                                        <button 
-                                            onClick={() => eliminarProducto(prod.id)}
-                                            className="btn-eliminar"
-                                        >
-                                            <span>🗑️</span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
+                {/* Sección de total y registro */}
                 <div className="total-section">
-                    <h3>Total: ${total.toLocaleString()}</h3>
+                    <div className="total-display">
+                        <span className="total-label">Total a pagar:</span>
+                        <span className="total-amount">${total.toLocaleString()}</span>
+                    </div>
                     <button 
-                        className="btn-registrar"
+                        className="btn-register-sale"
                         onClick={registrarVenta}
                         disabled={productos.length === 0}
                     >
-                        <span>💾</span> Registrar Venta
+                        💾 Registrar Venta
                     </button>
                 </div>
             </div>

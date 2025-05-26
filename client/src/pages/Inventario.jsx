@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import DynamicLabel from '../components/DynamicLabel';
 import { useAuth } from '../context/authContext';
 import axios from 'axios';
-import '../styles/styleInventario.css';  // Fixed the path (removed extra dot)
-import { productService } from '../services/api';
+import '../styles/styleInventario.css';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-
 
 function GestionInventario() {
     const [productos, setProductos] = useState([]);
@@ -20,11 +18,26 @@ function GestionInventario() {
         precio: "",
         cantidad: ""
     });
-    const { isAuthenticated } = useAuth();
-
+    const [categorias, setCategorias] = useState([]);
+    const [filtroCategoria, setFiltroCategoria] = useState('');
+    const [ordenarPor, setOrdenarPor] = useState('');
+    const [ordenDireccion, setOrdenDireccion] = useState('asc');
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [itemsPorPagina, setItemsPorPagina] = useState(10);
+    const [stockMinimo, setStockMinimo] = useState(5);
+    const buscarInputRef = useRef(null);
+    
     useEffect(() => {
         fetchProductos();
+        if (buscarInputRef.current) {
+            buscarInputRef.current.focus();
+        }
     }, []);
+    
+    useEffect(() => {
+        const uniqueCategories = [...new Set(productos.map(p => p.categoria))];
+        setCategorias(uniqueCategories.sort());
+    }, [productos]);
 
     const fetchProductos = async () => {
         try {
@@ -32,11 +45,11 @@ function GestionInventario() {
             setProductos(response.data);
         } catch (error) {
             console.error("Error al cargar productos:", error);
+            mostrarToast("Error al cargar productos", "error");
         }
     };
 
     const handleAgregar = async () => {
-        // Validaciones
         if (
             !nuevoProducto.codigo.trim() ||
             !nuevoProducto.nombre.trim() ||
@@ -44,15 +57,15 @@ function GestionInventario() {
             !nuevoProducto.precio ||
             !nuevoProducto.cantidad
         ) {
-            alert("Por favor, completa todos los campos.");
+            mostrarToast("Por favor, completa todos los campos.", "error");
             return;
         }
         if (isNaN(nuevoProducto.precio) || Number(nuevoProducto.precio) <= 0) {
-            alert("El precio debe ser un número positivo.");
+            mostrarToast("El precio debe ser un número positivo", "warning");
             return;
         }
         if (isNaN(nuevoProducto.cantidad) || Number(nuevoProducto.cantidad) < 0) {
-            alert("La cantidad debe ser un número igual o mayor a 0.");
+            mostrarToast("La cantidad debe ser un número igual o mayor a 0", "warning");
             return;
         }
     
@@ -64,12 +77,13 @@ function GestionInventario() {
             );
             setNuevoProducto({ codigo: "", nombre: "", categoria: "", precio: "", cantidad: "" });
             fetchProductos();
-            alert("¡Producto agregado exitosamente!");
+            mostrarToast("¡Producto agregado exitosamente!", "success");
+            setProductoEditando(null);
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
-                alert("Error al agregar producto: " + error.response.data.message);
+                mostrarToast("Error al agregar producto: " + error.response.data.message, "error");
             } else {
-                alert("Error al agregar producto. Revisa la consola.");
+                mostrarToast("Error al agregar producto.", "error");
             }
             console.error("Error al agregar producto:", error);
         }
@@ -86,8 +100,10 @@ function GestionInventario() {
                 );
                 setProductoEditando(null);
                 fetchProductos();
+                mostrarToast("Producto actualizado correctamente", "success");
             } catch (error) {
                 console.error("Error al actualizar producto:", error);
+                mostrarToast("Error al actualizar producto", "error");
             }
         } else {
             setProductoEditando(id);
@@ -102,9 +118,10 @@ function GestionInventario() {
                     { withCredentials: true }
                 );
                 fetchProductos();
+                mostrarToast("Producto eliminado correctamente", "success");
             } catch (error) {
                 console.error("Error al eliminar producto:", error);
-                alert("Error al eliminar producto: " + (error.response?.data?.message || "Error desconocido"));
+                mostrarToast("Error al eliminar producto", "error");
             }
         }
     };
@@ -113,8 +130,20 @@ function GestionInventario() {
         setBusqueda(e.target.value);
     };
 
+    const handleCategoriaChange = (e) => {
+        setFiltroCategoria(e.target.value);
+    };
+
+    const handleOrdenar = (campo) => {
+        let direccion = 'asc';
+        if (ordenarPor === campo) {
+            direccion = ordenDireccion === 'asc' ? 'desc' : 'asc';
+        }
+        setOrdenarPor(campo);
+        setOrdenDireccion(direccion);
+    };
+    
     const exportarAExcel = () => {
-        // Crear una copia de los datos para manipularlos
         const datosParaExportar = productos.map(producto => ({
             'Código': producto.codigo || 'N/A',
             'Nombre': producto.nombre,
@@ -124,26 +153,17 @@ function GestionInventario() {
             'Fecha de Actualización': new Date().toLocaleString()
         }));
 
-        // Crear un libro de trabajo
         const libro = XLSX.utils.book_new();
-        
-        // Crear una hoja de cálculo con los datos
         const hoja = XLSX.utils.json_to_sheet(datosParaExportar);
-        
-        // Añadir la hoja al libro
         XLSX.utils.book_append_sheet(libro, hoja, "Inventario");
         
-        // Generar el archivo binario
         const excelBuffer = XLSX.write(libro, { bookType: 'xlsx', type: 'array' });
-        
-        // Crear un Blob con el archivo
         const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
         
-        // Guardar el archivo
         saveAs(blob, `Inventario_SGS_${new Date().toLocaleDateString().replace(/\//g, '-')}.xlsx`);
+        mostrarToast("Inventario exportado correctamente", "success");
     };
     
-    // Función para importar desde Excel
     const importarDesdeExcel = (e) => {
         const archivo = e.target.files[0];
         if (!archivo) return;
@@ -154,14 +174,10 @@ function GestionInventario() {
                 const datos = new Uint8Array(evento.target.result);
                 const libro = XLSX.read(datos, { type: 'array' });
                 
-                // Obtener la primera hoja
                 const nombreHoja = libro.SheetNames[0];
                 const hoja = libro.Sheets[nombreHoja];
-                
-                // Convertir a JSON
                 const datosJSON = XLSX.utils.sheet_to_json(hoja);
                 
-                // Procesar los datos importados
                 const productosImportados = datosJSON.map(item => ({
                     nombre: item['Nombre'],
                     categoria: item['Categoría'],
@@ -169,10 +185,6 @@ function GestionInventario() {
                     cantidad: parseInt(item['Cantidad'])
                 }));
                 
-                // Aquí puedes decidir si quieres reemplazar todo el inventario
-                // o solo actualizar los productos existentes
-                
-                // Por ejemplo, actualizar productos existentes:
                 const productosActualizados = [...productos];
                 
                 productosImportados.forEach(productoImportado => {
@@ -181,46 +193,84 @@ function GestionInventario() {
                     );
                     
                     if (index !== -1) {
-                        // Actualizar producto existente
                         productosActualizados[index] = {
                             ...productosActualizados[index],
                             ...productoImportado
                         };
                     } else {
-                        // Agregar nuevo producto
                         productosActualizados.push(productoImportado);
                     }
                 });
                 
-                // Actualizar el estado
                 setProductos(productosActualizados);
-                
-                // Opcional: Sincronizar con el backend cuando haya conexión
-                // productosActualizados.forEach(producto => actualizarProductoEnBackend(producto));
-                
-                alert('Inventario importado correctamente');
+                mostrarToast('Inventario importado correctamente', 'success');
             } catch (error) {
                 console.error('Error al importar el archivo:', error);
-                alert('Error al importar el archivo. Verifica que sea un archivo Excel válido.');
+                mostrarToast('Error al importar el archivo', 'error');
             }
         };
         
         lector.readAsArrayBuffer(archivo);
     };
 
-    const productosFiltrados = productos.filter(producto =>
-        producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        producto.categoria.toLowerCase().includes(busqueda.toLowerCase())
+    const mostrarToast = (mensaje, tipo) => {
+        const toastContainer = document.querySelector('.toast-container') || (() => {
+            const container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+            return container;
+        })();
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${tipo}`;
+        toast.innerHTML = `
+            <span>${tipo === 'success' ? '✅' : tipo === 'error' ? '❌' : '⚠️'}</span>
+            <span>${mensaje}</span>
+        `;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 500);
+        }, 3000);
+    };
+
+    // Filtrar productos por búsqueda y categoría
+    let productosFiltrados = productos.filter(producto =>
+        (producto.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+        producto.codigo?.toLowerCase().includes(busqueda.toLowerCase()) ||
+        producto.categoria.toLowerCase().includes(busqueda.toLowerCase())) &&
+        (filtroCategoria === "" || producto.categoria === filtroCategoria)
     );
+
+    // Ordenar productos si hay un campo de ordenamiento seleccionado
+    if (ordenarPor) {
+        productosFiltrados = [...productosFiltrados].sort((a, b) => {
+            if (a[ordenarPor] < b[ordenarPor]) {
+                return ordenDireccion === 'asc' ? -1 : 1;
+            }
+            if (a[ordenarPor] > b[ordenarPor]) {
+                return ordenDireccion === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    }
 
     return (
         <div className="contenedor-inventario">
             <Navbar />
             
             <div className="contenido-inventario">
-                <h2>Gestión de Inventario</h2>
+                <h2>📦 Gestión de Inventario</h2>
+                <button className="btn-agregar" onClick={() => setProductoEditando('nuevo')}>
+                    <span>➕</span> Agregar Producto
+                </button>
                 
-                {/* Botones para exportar e importar Excel */}
                 <div className="export-controls">
                     <button onClick={exportarAExcel} className="excel-button">
                         <i className="fas fa-file-excel"></i>
@@ -242,18 +292,27 @@ function GestionInventario() {
                     </div>
                 </div>
                 
-                <div className="acciones-inventario">
-                    <button className="btn-agregar" onClick={() => setProductoEditando('nuevo')}>
-                        <span>➕</span> Agregar Producto
-                    </button>
+                <div className="filtros-container">
                     <div className="buscar-producto">
                         <input 
                             type="search" 
                             placeholder="Buscar producto..." 
                             value={busqueda}
                             onChange={handleBuscar}
+                            ref={buscarInputRef}
                         />
                     </div>
+                    
+                    <select 
+                        className="filtro-categoria"
+                        value={filtroCategoria}
+                        onChange={handleCategoriaChange}
+                    >
+                        <option value="">Todas las categorías</option>
+                        {categorias.map((cat, index) => (
+                            <option key={index} value={cat}>{cat}</option>
+                        ))}
+                    </select>
                 </div>
 
                 {productoEditando === 'nuevo' && (
@@ -294,117 +353,137 @@ function GestionInventario() {
                     </div>
                 )}
 
-                <div className="tabla-productos">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Categoría</th>
-                                <th>Precio</th>
-                                <th>Cantidad</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {productosFiltrados.map(producto => (
-                                <tr key={producto._id}>
-                                    <td>
-                                        {productoEditando === producto._id ? (
-                                            <input
-                                                value={producto.codigo || ''}
-                                                onChange={e => {
-                                                    const newProductos = productos.map(p =>
-                                                        p._id === producto._id ? {...p, codigo: e.target.value.toUpperCase()} : p
-                                                    );
-                                                    setProductos(newProductos);
-                                                }}
-                                                style={{textTransform: 'uppercase'}}
-                                            />
-                                        ) : (producto.codigo || 'N/A')}
-                                    </td>
-                                    <td>
-                                        {productoEditando === producto._id ? (
-                                            <input
-                                                value={producto.nombre}
-                                                onChange={e => {
-                                                    const newProductos = productos.map(p =>
-                                                        p._id === producto._id ? {...p, nombre: e.target.value} : p
-                                                    );
-                                                    setProductos(newProductos);
-                                                }}
-                                            />
-                                        ) : producto.nombre}
-                                    </td>
-                                    <td>
-                                        {productoEditando === producto._id ? (
-                                            <input
-                                                value={producto.categoria}
-                                                onChange={e => {
-                                                    const newProductos = productos.map(p =>
-                                                        p._id === producto._id ? {...p, categoria: e.target.value} : p
-                                                    );
-                                                    setProductos(newProductos);
-                                                }}
-                                            />
-                                        ) : producto.categoria}
-                                    </td>
-                                    <td>
-                                        {productoEditando === producto._id ? (
-                                            <input
-                                                type="number"
-                                                value={producto.precio}
-                                                onChange={e => {
-                                                    const newProductos = productos.map(p =>
-                                                        p._id === producto._id ? {...p, precio: e.target.value} : p
-                                                    );
-                                                    setProductos(newProductos);
-                                                }}
-                                            />
-                                        ) : `$${producto.precio}`}
-                                    </td>
-                                    <td>
-                                        {productoEditando === producto._id ? (
-                                            <input
-                                                type="number"
-                                                value={producto.cantidad}
-                                                onChange={e => {
-                                                    const newProductos = productos.map(p =>
-                                                        p._id === producto._id ? {...p, cantidad: e.target.value} : p
-                                                    );
-                                                    setProductos(newProductos);
-                                                }}
-                                            />
-                                        ) : producto.cantidad}
-                                    </td>
-                                    <td>
-                                        <div className="botones-accion">
-                                            <button 
-                                                className="btn-accion-small btn-editar"
-                                                onClick={() => handleEditar(producto._id)}
-                                                title={productoEditando === producto._id ? 'Guardar' : 'Editar'}
-                                            >
-                                                {productoEditando === producto._id ? '💾' : '✏️'}
-                                            </button>
-                                            <button 
-                                                className="btn-accion-small btn-eliminar"
-                                                onClick={() => handleEliminar(producto._id)}
-                                                title="Eliminar"
-                                            >
-                                                🗑️
-                                            </button>
-                                        </div>
-                                    </td>
+                {productosFiltrados.length > 0 ? (
+                    <div className="tabla-productos">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th 
+                                        className={`ordenable ${ordenarPor === 'precio' ? ordenDireccion : ''}`}
+                                        onClick={() => handleOrdenar('precio')}
+                                    >
+                                        Precio {ordenarPor === 'precio' && (ordenDireccion === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th 
+                                        className={`ordenable ${ordenarPor === 'cantidad' ? ordenDireccion : ''}`}
+                                        onClick={() => handleOrdenar('cantidad')}
+                                    >
+                                        Cantidad {ordenarPor === 'cantidad' && (ordenDireccion === 'asc' ? '↑' : '↓')}
+                                    </th>
+                                    <th>Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {productosFiltrados.map(producto => (
+                                    <tr key={producto._id}>
+                                        <td>
+                                            {productoEditando === producto._id ? (
+                                                <input
+                                                    value={producto.codigo || ''}
+                                                    onChange={e => {
+                                                        const newProductos = productos.map(p =>
+                                                            p._id === producto._id ? {...p, codigo: e.target.value.toUpperCase()} : p
+                                                        );
+                                                        setProductos(newProductos);
+                                                    }}
+                                                    style={{textTransform: 'uppercase'}}
+                                                />
+                                            ) : (producto.codigo || 'N/A')}
+                                        </td>
+                                        <td>
+                                            {productoEditando === producto._id ? (
+                                                <input
+                                                    value={producto.nombre}
+                                                    onChange={e => {
+                                                        const newProductos = productos.map(p =>
+                                                            p._id === producto._id ? {...p, nombre: e.target.value} : p
+                                                        );
+                                                        setProductos(newProductos);
+                                                    }}
+                                                />
+                                            ) : producto.nombre}
+                                        </td>
+                                        <td>
+                                            {productoEditando === producto._id ? (
+                                                <input
+                                                    value={producto.categoria}
+                                                    onChange={e => {
+                                                        const newProductos = productos.map(p =>
+                                                            p._id === producto._id ? {...p, categoria: e.target.value} : p
+                                                        );
+                                                        setProductos(newProductos);
+                                                    }}
+                                                />
+                                            ) : producto.categoria}
+                                        </td>
+                                        <td>
+                                            {productoEditando === producto._id ? (
+                                                <input
+                                                    type="number"
+                                                    value={producto.precio}
+                                                    onChange={e => {
+                                                        const newProductos = productos.map(p =>
+                                                            p._id === producto._id ? {...p, precio: e.target.value} : p
+                                                        );
+                                                        setProductos(newProductos);
+                                                    }}
+                                                />
+                                            ) : `$${producto.precio}`}
+                                        </td>
+                                        <td className={producto.cantidad < stockMinimo ? 'stock-bajo' : ''}>
+                                            {productoEditando === producto._id ? (
+                                                <input
+                                                    type="number"
+                                                    value={producto.cantidad}
+                                                    onChange={e => {
+                                                        const newProductos = productos.map(p =>
+                                                            p._id === producto._id ? {...p, cantidad: e.target.value} : p
+                                                        );
+                                                        setProductos(newProductos);
+                                                    }}
+                                                />
+                                            ) : (
+                                                <>
+                                                    {producto.cantidad}
+                                                    {producto.cantidad < stockMinimo && ' ⚠️'}
+                                                </>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <div className="botones-accion">
+                                                <button 
+                                                    className="btn-accion-small btn-editar"
+                                                    onClick={() => handleEditar(producto._id)}
+                                                    data-tooltip={productoEditando === producto._id ? 'Guardar' : 'Editar'}
+                                                >
+                                                    {productoEditando === producto._id ? '💾' : '✏️'}
+                                                </button>
+                                                <button 
+                                                    className="btn-accion-small btn-eliminar"
+                                                    onClick={() => handleEliminar(producto._id)}
+                                                    data-tooltip="Eliminar"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="no-productos">
+                        <p>No hay productos en el inventario</p>
+                        <small>Agrega productos o modifica tu búsqueda</small>
+                    </div>
+                )}
             </div>
         </div>
     );
 }
 
 export default GestionInventario;
-
-
