@@ -65,7 +65,7 @@ function Principal() {
             <Navbar />
             <main className="dashboard-content">
                 <div className="dashboard-header">
-                    <h1>Panel de Control</h1>
+                    <h2>Panel de Control</h2>
                     <p className="welcome-message">
                         {user?.role === 'admin' && `Bienvenido administrador, ${user?.username || 'Usuario'}`}
                         {user?.role === 'cajero' && `Bienvenido cajero, ${user?.username || 'Usuario'}`}

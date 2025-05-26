@@ -231,7 +231,7 @@ const RegistroVentas = () => {
             <Navbar />
             <div className="registro-ventas">
                 <div className="header-section">
-                    <h2>📊 Registro de Ventas</h2>
+                    <h2>Registro de Ventas</h2>
                     <button 
                         className="help-button"
                         onClick={() => setShowHelp(!showHelp)}

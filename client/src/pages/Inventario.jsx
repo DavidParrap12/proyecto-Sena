@@ -266,7 +266,7 @@ function GestionInventario() {
             <Navbar />
             
             <div className="contenido-inventario">
-                <h2>📦 Gestión de Inventario</h2>
+                <h2>Gestión de Inventario</h2>
                 <button className="btn-agregar" onClick={() => setProductoEditando('nuevo')}>
                     <span>➕</span> Agregar Producto
                 </button>
